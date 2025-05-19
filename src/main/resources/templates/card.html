@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Tarjetas de Crédito de Prueba</title>
+    <link rel="stylesheet" th:href="@{/style/card.css}">
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>Generador de Tarjetas de Crédito</h1>
+        <p class="subtitle">Crea y gestiona tarjetas de crédito de prueba de forma segura</p>
+    </header>
+
+    <div class="app-container">
+        <div class="card-container">
+            <div class="credit-card">
+                <div class="credit-card-front">
+                    <div class="card-chip"></div>
+                    <div class="card-number" id="displayCardNumber">•••• •••• •••• ••••</div>
+                    <div class="card-details">
+                        <div class="card-holder">
+                            <div class="label">Titular</div>
+                            <div class="value" id="displayName">NOMBRE APELLIDO</div>
+                        </div>
+                        <div class="card-expiry">
+                            <div class="label">Válida hasta</div>
+                            <div class="value" id="displayExpiry">MM/AA</div>
+                        </div>
+                    </div>
+                    <div class="card-brand" id="cardBrand">VISA</div>
+                    <button class="flip-btn" id="flipCard">↻</button>
+                </div>
+                <div class="credit-card-back">
+                    <div class="card-back-stripe"></div>
+                    <div class="card-cvv">
+                        <div class="label">CVV</div>
+                        <div class="value" id="displayCvv">•••</div>
+                    </div>
+                    <button class="flip-btn" id="flipCardBack">↻</button>
+                </div>
+            </div>
+
+            <div class="card-templates">
+                <div class="template-title">Selecciona un diseño:</div>
+                <div class="template-cards">
+                    <div class="template-card visa" data-color="blue" data-brand="VISA"></div>
+                    <div class="template-card mastercard" data-color="red" data-brand="MASTERCARD"></div>
+                    <div class="template-card amex" data-color="green" data-brand="AMEX"></div>
+                    <div class="template-card discover" data-color="orange" data-brand="DISCOVER"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-container">
+            <h2 class="form-title">Detalles de la Tarjeta</h2>
+            <form id="cardForm" th:action="@{/card/save-card}" th:method="post" th:object="${card}">
+                <div class="form-group">
+                    <label for="cardType">Tipo de Tarjeta</label>
+                    <select name="cardType" id="cardType" required>
+                        <option value="">Seleccione el tipo</option>
+                        <option th:each="type : ${typeCards}"
+                                th:value="${type.name()}"
+                                th:text="${type.getDisplayName()}"
+                        >Tipo
+                        </option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="cardNumber">Número de Tarjeta</label>
+                    <input type="text" name="cardNumber" id="cardNumber" placeholder="1234 5678 9012 3456"
+                           maxlength="19" required>
+                </div>
+                <div class="form-group">
+                    <label for="cardName">Nombre del Titular</label>
+                    <input type="text" id="cardName" name="cardName" placeholder="Nombre Apellido" required>
+                </div>
+                <div class="form-group">
+                    <label for="valueCard">Saldo de la tarjeta</label>
+                    <input type="number" name="valueCard" id="valueCard" placeholder="Saldo de la tarjeta" required>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="expiryMonth">Mes de Expiración</label>
+                            <select id="expiryMonth" required name="expiryMonth">
+                                <option value="">MM</option>
+                                <option value="01">01</option>
+                                <option value="02">02</option>
+                                <option value="03">03</option>
+                                <option value="04">04</option>
+                                <option value="05">05</option>
+                                <option value="06">06</option>
+                                <option value="07">07</option>
+                                <option value="08">08</option>
+                                <option value="09">09</option>
+                                <option value="10">10</option>
+                                <option value="11">11</option>
+                                <option value="12">12</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="expiryYear">Año de Expiración</label>
+                            <select id="expiryYear" name="expiryYear" required>
+                                <option value="">AA</option>
+                                <option value="25">25</option>
+                                <option value="26">26</option>
+                                <option value="27">27</option>
+                                <option value="28">28</option>
+                                <option value="29">29</option>
+                                <option value="30">30</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="cvv">CVV</label>
+                            <input type="text" id="cvv" name="cvv" placeholder="123" maxlength="4" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button type="button" id="generateBtn" class="btn">Generar Aleatoriamente</button>
+                    <input type="submit" class="btn btn-secondary" value="Guardar tarjeta">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Elements
+        const cardElement = document.querySelector('.credit-card');
+        const flipBtn = document.getElementById('flipCard');
+        const flipBtnBack = document.getElementById('flipCardBack');
+        const displayCardNumber = document.getElementById('displayCardNumber');
+        const displayName = document.getElementById('displayName');
+        const displayExpiry = document.getElementById('displayExpiry');
+        const displayCvv = document.getElementById('displayCvv');
+        const cardBrand = document.getElementById('cardBrand');
+        const cardForm = document.getElementById('cardForm');
+        const cardTypeSelect = document.getElementById('cardType');
+        const cardNumberInput = document.getElementById('cardNumber');
+        const cardNameInput = document.getElementById('cardName');
+        const expiryMonthSelect = document.getElementById('expiryMonth');
+        const expiryYearSelect = document.getElementById('expiryYear');
+        const cvvInput = document.getElementById('cvv');
+        const generateBtn = document.getElementById('generateBtn');
+        const templateCards = document.querySelectorAll('.template-card');
+
+        // Card templates
+        const cardTemplates = {
+
+            VISA: {
+                background: 'linear-gradient(135deg, #1a1f71, #2557D6)',
+                brand: 'VISA'
+            },
+            MASTERCARD: {
+                background: 'linear-gradient(135deg, #EB001B, #F79E1B)',
+                brand: 'MASTERCARD'
+            },
+            AMEX: {
+                background: 'linear-gradient(135deg, #2E77BB, #6BBBDF)',
+                brand: 'AMEX'
+            },
+            DISCOVER: {
+                background: 'linear-gradient(135deg, #FF6600, #FFAA00)',
+                brand: 'DISCOVER'
+            }
+        };
+
+        // Format card number
+        function formatCardNumber(number, type) {
+            let formatted = '';
+            if (type === 'amex') {
+                // Format for AMEX (4-6-5)
+                for (let i = 0; i < number.length; i++) {
+                    if (i === 4 || i === 10) formatted += ' ';
+                    formatted += number[i];
+                }
+            } else {
+                // Format for other cards (4-4-4-4)
+                for (let i = 0; i < number.length; i++) {
+                    if (i > 0 && i % 4 === 0) formatted += ' ';
+                    formatted += number[i];
+                }
+            }
+            return formatted;
+        }
+
+        // Generate random card number based on type
+        function generateCardNumber(type) {
+            let prefix, length;
+
+            switch (type) {
+                case 'visa':
+                    prefix = '4';
+                    length = 16;
+                    break;
+                case 'mastercard':
+                    prefix = '5' + Math.floor(Math.random() * 5 + 1);
+                    length = 16;
+                    break;
+                case 'amex':
+                    prefix = '3' + (Math.random() > 0.5 ? '4' : '7');
+                    length = 15;
+                    break;
+                case 'discover':
+                    prefix = '6011';
+                    length = 16;
+                    break;
+                default:
+                    prefix = '4';
+                    length = 16;
+            }
+
+            let number = prefix;
+            for (let i = prefix.length; i < length - 1; i++) {
+                number += Math.floor(Math.random() * 10);
+            }
+
+            // Implement Luhn algorithm for the check digit
+            let sum = 0;
+            let alt = false;
+            for (let i = number.length - 1; i >= 0; i--) {
+                let digit = parseInt(number[i]);
+                if (alt) {
+                    digit *= 2;
+                    if (digit > 9) digit -= 9;
+                }
+                sum += digit;
+                alt = !alt;
+            }
+
+            const checkDigit = (10 - (sum % 10)) % 10;
+            return number + checkDigit;
+        }
+
+        // Generate random CVV
+        function generateCVV(type) {
+            const length = type === 'amex' ? 4 : 3;
+            let cvv = '';
+            for (let i = 0; i < length; i++) {
+                cvv += Math.floor(Math.random() * 10);
+            }
+            return cvv;
+        }
+
+        // Update card display
+        function updateCardDisplay() {
+            const type = cardTypeSelect.value;
+            const number = cardNumberInput.value.replace(/\s/g, '');
+            const name = cardNameInput.value;
+            const month = expiryMonthSelect.value;
+            const year = expiryYearSelect.value;
+            const cvv = cvvInput.value;
+
+            // Update card style
+            if (cardTypeSelect.value === "") {
+                return;
+            }
+            cardElement.style.background = cardTemplates[type].background;
+            cardBrand.textContent = cardTemplates[type].brand;
+
+            // Update displayed values
+            displayCardNumber.textContent = number ? formatCardNumber(number, type) : '•••• •••• •••• ••••';
+            displayName.textContent = name ? name.toUpperCase() : 'NOMBRE APELLIDO';
+            displayExpiry.textContent = (month && year) ? `${month}/${year}` : 'MM/AA';
+            displayCvv.textContent = cvv ? cvv : '•••';
+        }
+
+        // Generate random card details
+        function generateRandomCard(typeRandom) {
+            let type = typeRandom ? typeRandom : cardTypeSelect.value;
+
+            const number = generateCardNumber(type);
+            const month = String(Math.floor(Math.random() * 12) + 1).padStart(2, '0');
+            const year = String(Math.floor(Math.random() * 6) + 25);
+            const cvv = generateCVV(type);
+
+            // Set values in form
+            cardNumberInput.value = formatCardNumber(number, type);
+            expiryMonthSelect.value = month;
+            expiryYearSelect.value = year;
+            cvvInput.value = cvv;
+            cardTypeSelect.selectedIndex = type;
+
+            // Update card display
+            updateCardDisplay();
+        }
+
+
+        // Format card number input
+        cardNumberInput.addEventListener('input', function () {
+            let value = this.value.replace(/\D/g, '');
+            const type = cardTypeSelect.value;
+            const maxLength = type === 'amex' ? 15 : 16;
+
+            if (value.length > maxLength) {
+                value = value.substring(0, maxLength);
+            }
+
+            this.value = formatCardNumber(value, type);
+            updateCardDisplay();
+        });
+
+        // Format CVV input
+        cvvInput.addEventListener('input', function () {
+            let value = this.value.replace(/\D/g, '');
+            const type = cardTypeSelect.value;
+            const maxLength = type === 'amex' ? 4 : 3;
+
+            if (value.length > maxLength) {
+                value = value.substring(0, maxLength);
+            }
+
+            this.value = value;
+            updateCardDisplay();
+        });
+
+        // Update display on input change
+        cardNameInput.addEventListener('input', updateCardDisplay);
+        expiryMonthSelect.addEventListener('change', updateCardDisplay);
+        expiryYearSelect.addEventListener('change', updateCardDisplay);
+
+        // Update card type
+        cardTypeSelect.addEventListener('change', function () {
+            const type = this.value;
+            cardElement.style.background = cardTemplates[type].background;
+            cardBrand.textContent = cardTemplates[type].brand;
+
+            // Clear and reformat card number based on new type
+            const value = cardNumberInput.value.replace(/\s/g, '');
+            if (value) {
+                cardNumberInput.value = formatCardNumber(value, type);
+            }
+
+            // Clear and update CVV
+            const cvvValue = cvvInput.value;
+            if (cvvValue) {
+                if (type === 'amex' && cvvValue.length < 4) {
+                    cvvInput.value = cvvValue + '0';
+                } else if (type !== 'amex' && cvvValue.length > 3) {
+                    cvvInput.value = cvvValue.substring(0, 3);
+                }
+            }
+
+            updateCardDisplay();
+        });
+
+        // Flip card
+        flipBtn.addEventListener('click', () => {
+            cardElement.classList.add('flipped');
+        });
+
+        flipBtnBack.addEventListener('click', () => {
+            cardElement.classList.remove('flipped');
+        });
+
+        // Template card selection
+        templateCards.forEach(card => {
+            card.addEventListener('click', function () {
+                const brand = this.getAttribute('data-brand');
+
+                // Set corresponding card type
+                switch (brand) {
+                    case 'VISA':
+                        cardTypeSelect.value = 'visa';
+                        break;
+                    case 'MASTERCARD':
+                        cardTypeSelect.value = 'mastercard';
+                        break;
+                    case 'AMEX':
+                        cardTypeSelect.value = 'amex';
+                        break;
+                    case 'DISCOVER':
+                        cardTypeSelect.value = 'discover';
+                        break;
+                }
+
+                // Trigger change event to update card style
+                cardTypeSelect.dispatchEvent(new Event('change'));
+            });
+        });
+
+        // Generate random card
+        generateBtn.addEventListener('click', e => {
+            const keys = Object.keys(cardTemplates);
+            const number = Math.floor(Math.random() * keys.length) + 1;
+            generateRandomCard(number);
+        });
+
+        // Save card
+        // cardForm.addEventListener('submit', function (e) {
+        //     e.preventDefault();
+        //
+        //     const type = cardTypeSelect.value;
+        //     const number = cardNumberInput.value;
+        //     const name = cardNameInput.value;
+        //     const month = expiryMonthSelect.value;
+        //     const year = expiryYearSelect.value;
+        //     const cvv = cvvInput.value;
+        //     const expiry = `${month}/${year}`;
+        //
+        //     // Validate form
+        //     if (!number || !name || !month || !year || !cvv) {
+        //         alert('Por favor, completa todos los campos');
+        //         return;
+        //     }
+        //
+        //     // Reset form
+        //     cardForm.reset();
+        //     updateCardDisplay();
+        //
+        //     alert('Tarjeta guardada correctamente');
+        // });
+
+        // Initialize with random card
+        generateRandomCard();
+    });
+</script>
+</body>
+</html>

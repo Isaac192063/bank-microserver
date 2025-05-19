@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalles transacción</title>
+    <link rel="stylesheet" th:href="@{/style/only-transaction.css}">
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>Detalles de la transacción</h1>
+    </header>
+
+    <div class="transactions">
+        <div class="transaction-card">
+            <div class="transaction-header">
+                <div>
+                    <div class="transaction-id" th:text="'ID de Transacción: #'+ ${transaction.getId()}"></div>
+                    <div class="transaction-date" th:text="${#temporals.format(transaction.getDateTime(), 'dd/MM/yyyy HH:mm:ss')}"></div>
+                </div>
+                <span th:text="${transaction.getStatusPayment()}" th:class="'transaction-status status-' + ${transaction.statusPayment}">COMPLETADA</span>
+            </div>
+
+            <div class="detail-group">
+                <div class="detail-title">Información de Pago</div>
+                <div class="detail-content">
+                    <div class="detail-row">
+                        <span class="detail-label">Descripción:</span>
+                        <span class="detail-value" th:text="${transaction.getDescription()}"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Estado:</span>
+                        <span class="detail-value" th:text="${transaction.getStatusPayment()}"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Monto:</span>
+                        <span class="detail-value" th:text="'$' + ${transaction.getAmount()}"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-group">
+                <div class="detail-title">Información de Tarjeta</div>
+                <div class="detail-content">
+                    <div class="detail-row">
+                        <span class="detail-label">Tipo:</span>
+                        <span class="detail-value">
+                                <svg class="card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                     fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="1" y="4" width="22" height="16" rx="2"/>
+                                    <line x1="1" y1="10" x2="23" y2="10"/>
+                                </svg>
+                                <span th:text="${transaction.getCard().getCardType().getDisplayName()}"></span>
+                            </span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Número:</span>
+                        <span class="detail-value card-number" th:text="${transaction.card.getCardNumber()}"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Titular:</span>
+                        <span class="detail-value" th:text="${transaction.getCard().getCardName()}"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Expiración:</span>
+                        <span class="detail-value" th:text="${transaction.getCard().getExpiryMonth()} +'' + ${transaction.getCard().getExpiryYear()}"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-group">
+                <div class="detail-title">Información del Usuario</div>
+                <div class="detail-content">
+                    <div class="detail-row">
+                        <span class="detail-label">Nombre:</span>
+                        <span class="detail-value">Fernando</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Email:</span>
+                        <span class="detail-value">casa@gamil.com</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Documento:</span>
+                        <span class="detail-value">13131232</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="transaction-amount" th:text="'TOTAL: $' + ${transaction.getAmount()}">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
