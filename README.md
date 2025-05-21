@@ -118,3 +118,38 @@ GET /api/v1/payment
 | 404    | Tarjeta no encontrada                                    |
 | 402    | Tarjeta inválida o sin fondos suficientes                |
 | 500    | Error interno del servidor                               |
+
+
+### Respuesta 
+
+posibles repuestas de pago:
+
+- SUCCESS
+- FAILED
+- WAITING
+
+```
+{
+    "id": 9,
+    "dateTime": "2025-05-20T20:48:31.6441402",
+    "description": "Pago realizado con exito",
+    "statusPayment": "SUCCESS",
+    "card": {
+        "id": 2,
+        "cardType": "DISCOVER",
+        "cardNumber": "4844 7442 6365 7972",
+        "cardName": "Juan Pereira",
+        "valueCard": 9500.00,
+        "expiryMonth": "06",
+        "expiryYear": "27",
+        "cvv": "079"
+    },
+    "user": {
+        "id": 2,
+        "name": "casandra",
+        "email": "casa2@gamil.com",
+        "document": "1324334"
+    },
+    "amount": 500
+}
+```
