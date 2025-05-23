@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Listado de tarjetas</title>
+    <link rel="stylesheet" th:href="@{/style/list-card.css}">
+</head>
+<body>
+<h2>Listado de tarjetas de cerdito</h2>
+
+<main>
+    <ul class="card" th:each="card : ${cards}">
+        <div>
+            <h3 th:text="${card.getCardName()}"></h3>
+            <li th:text="${card.getCardNumber()}"></li>
+            <div>
+                <span th:text="${card.getExpiryMonth()}"></span>
+                <span>/</span>
+                <span th:text="${card.getExpiryYear()}"></span>
+            </div>
+            <li th:text="${card.getCvv()}"></li>
+        </div>
+        <span class="flex">
+            <h4>Valor de la tarjeta: </h4>
+        <li th:text="${card.getValueCard()}">COP</li>
+        </span>
+    </ul>
+</main>
+</body>
+</html>

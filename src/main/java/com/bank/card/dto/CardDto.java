@@ -6,6 +6,7 @@ import lombok.Data;
 
 @Data
 public class CardDto {
+    private Long id;
     private TypeCard cardType;
     private String cardNumber;
     private String cardName;

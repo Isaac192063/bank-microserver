@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Transacciones</title>
+    <link rel="stylesheet" th:href="@{/style/view-transaction.css}">
+
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>Lista de Transacciones</h1>
+        <a th:href="@{/transaction}">
+            <button class="refresh-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+                    <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+                </svg>
+                Actualizar
+            </button>
+        </a>
+
+    </header>
+
+    <table class="transactions-table">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Fecha</th>
+            <th>Usuario</th>
+            <th>Tarjeta</th>
+            <th>Monto</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="transaction : ${transactions}">
+            <td th:text="${transaction.getId()}"></td>
+            <td th:text="${#temporals.format(transaction.getDateTime(), 'dd/MM/yyyy HH:mm:ss')}">17/05/2025 12:18</td>
+
+            <td th:text="${transaction.getUser().getName()}"></td>
+            <td><span class="card-number" th:text="'**** **** **** ' + ${#strings.substring(transaction.card.cardNumber, transaction.card.cardNumber.length() - 4)}"
+            >**** **** **** 6015</span></td>
+            <td th:text="${transaction.getAmount()}" class="amount"></td>
+            <td>
+                <span th:text="${transaction.statusPayment}"
+                      th:class="'status-badge status-' + ${transaction.statusPayment}">
+                </span>
+            </td>
+
+            <td>
+                <a th:href="@{/transaction/{id}(id=${transaction.id})}">
+                    <button class="detail-btn"> Ver Detalles</button>
+                </a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
