@@ -11,6 +11,7 @@ Este proyecto es un microservicio desarrollado en Spring Boot que simula un sist
 - Spring Boot
 - Thymeleaf (para vistas)
 - Spring Data JPA
+- Spring Security con JWT
 - Maven
 
 ## Requisitos previos
@@ -21,7 +22,7 @@ Este proyecto es un microservicio desarrollado en Spring Boot que simula un sist
 ## Instalación
 1. Clonar el repositorio:
    ```bash
-   git clone https://github.com /tu-usuario/banco-microservicio.git
+   git clone https://github.com/tu-usuario/banco-microservicio.git
    cd banco-microservicio
    ```
 
@@ -35,32 +36,91 @@ Este proyecto es un microservicio desarrollado en Spring Boot que simula un sist
 4. Se redirige a `/card/list` donde el usuario puede visualizar todas sus tarjetas creadas
 5. El usuario puede seleccionar una tarjeta para realizar pagos a través del endpoint `/api/v1/payment`
 
+---
+
+## Seguridad: Autenticación con JWT
+
+Se implementó seguridad basada en JWT para proteger ciertos endpoints sensibles. Los tokens se generan desde un endpoint específico y deben enviarse en el encabezado de las solicitudes protegidas:
+
+```
+Authorization: Bearer <token>
+```
+
+### Endpoints protegidos (requieren token JWT)
+
+| Método | Endpoint                 | Descripción                             |
+|--------|--------------------------|-----------------------------------------|
+| GET    | /transaction             | Lista todas las transacciones           |
+| GET    | /transaction/{id}        | Muestra detalles de una transacción     |
+| POST   | /api/v1/payment          | Realiza un pago con tarjeta             |
+
+### Endpoints públicos (no requieren autenticación)
+
+| Método | Endpoint       | Descripción                                 |
+|--------|----------------|---------------------------------------------|
+| GET    | /card          | Formulario para crear tarjeta               |
+| GET    | /card/list     | Lista de tarjetas creadas                   |
+| POST   | /auth/token    | Genera un token JWT con usuario y contraseña|
+
+---
+
+## Nuevo Endpoint de Autenticación
+
+### `POST /auth/token`
+
+- **Descripción:** Permite autenticar al usuario y generar un token JWT que puede usarse en los endpoints protegidos.
+- **Cuerpo de la solicitud (JSON):**
+
+```json
+{
+  "username": "admin",
+  "password": "admin"
+}
+```
+
+- **Respuesta exitosa:**
+```json
+"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+- **Respuestas posibles:**
+  | Código | Descripción                          |
+  |--------|--------------------------------------|
+  | 200    | Token generado correctamente         |
+  | 401    | Credenciales inválidas               |
+
+---
+
 ## Endpoints Web
 
 ### Gestión de tarjetas
 
-### `GET /card`
+#### `GET /card`
 
 - **Descripción:** Muestra el formulario para crear una nueva tarjeta de crédito
 - **Vista renderizada:** `card/card.html`
 - **Acceso:** Navegador web
 
-### `GET /card/list`
+#### `GET /card/list`
 
 - **Descripción:** Muestra la lista de tarjetas de crédito creadas por el usuario
 - **Vista renderizada:** `card/list-card.html`
 
-### Visuzalizar transacciones
+---
 
-### `GET /transaction`
+### Visualizar transacciones
+
+#### `GET /transaction`
 
 - **Descripción:** Muestra el listado de transacciones que se han realizado
 - **Vista renderizada:** `card/view-transaction.html`
-- 
-### `GET /transaction/{id}`
 
-- **Descripción:** Muestra el detalle de una trasansacción realiada
+#### `GET /transaction/{id}`
+
+- **Descripción:** Muestra el detalle de una transacción realizada
 - **Vista renderizada:** `card/only-trasanction.html`
+
+---
 
 ## API REST
 
@@ -70,25 +130,13 @@ Este proyecto es un microservicio desarrollado en Spring Boot que simula un sist
 POST /api/v1/payment
 ```
 
-| Parámetro          | Tipo   | Descripción                                                 |
-|--------------------|--------|-------------------------------------------------------------|
-| `value`            | string | **Requerido**. Monto del pago en moneda local               |
-| `card`             | object | **Requerido**. Datos de la tarjeta de crédito               |
-| `card.cardNumber`  | string | **Requerido**. Número de la tarjeta de crédito              |
-| `card.expiryMonth` | string | **Requerido**. Mes de vencimiento de la tarjeta (MM)        |
-| `card.expiryYear`  | string | **Requerido**. Año de vencimiento de la tarjeta (YY)        |
-| `card.cvv`         | string | **Requerido**. Código de seguridad (CVV) de la tarjeta      |
-| `user`             | object | **Requerido**. Información del usuario que realiza el pago  |
-| `user.name`        | string | **Requerido**. Nombre completo del titular de la tarjeta    |
-| `user.email`       | string | **Requerido**. Correo electrónico para notificaciones       |
-| `user.document`    | string | **Requerido**. Número de documento de identidad del usuario |
+#### Parámetros
 
-
-### Realizar un pago
-
-```http
-GET /api/v1/payment
-```
+| Campo             | Tipo     | Descripción                                |
+|------------------|----------|--------------------------------------------|
+| value            | string   | **Requerido.** Monto del pago              |
+| card             | object   | **Requerido.** Datos de la tarjeta         |
+| user             | object   | **Requerido.** Datos del usuario           |
 
 #### Ejemplo de solicitud
 
@@ -119,16 +167,9 @@ GET /api/v1/payment
 | 402    | Tarjeta inválida o sin fondos suficientes                |
 | 500    | Error interno del servidor                               |
 
+#### Respuesta
 
-### Respuesta 
-
-posibles repuestas de pago:
-
-- SUCCESS
-- FAILED
-- WAITING
-
-```
+```json
 {
     "id": 9,
     "dateTime": "2025-05-20T20:48:31.6441402",
