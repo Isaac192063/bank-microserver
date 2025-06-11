@@ -35,6 +35,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/card/list").permitAll()
                         .requestMatchers(HttpMethod.GET, "/card").permitAll()
                         .requestMatchers(HttpMethod.POST, "/card/save-card").permitAll()
+                        .requestMatchers("/style/**").permitAll()
+                        .requestMatchers("/favicon.ico").permitAll()
 
                         // Endpoints protegidos
                         .requestMatchers(HttpMethod.GET, "/transaction/**").authenticated()
