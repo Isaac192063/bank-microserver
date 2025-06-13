@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank API - Developer Portal</title>
+    <link rel="stylesheet" th:href="@{/style/create-account.css}">
+
+</head>
+<body>
+<div class="bg-elements">
+    <div class="bg-circle"></div>
+    <div class="bg-circle"></div>
+    <div class="bg-circle"></div>
+</div>
+
+<div class="container">
+    <div class="header">
+        <div class="logo">B</div>
+        <h1>Bank API</h1>
+        <p>Portal de Desarrolladores</p>
+    </div>
+
+    <div class="main-content">
+        <div class="form-section" id="registration-form">
+            <form id="appForm"  th:action="@{/auth/create-account}" th:method="post" th:object="${account}">
+                <div class="form-group">
+                    <label for="nameApp">Nombre de la app</label>
+                    <input type="text" id="nameApp" name="nameApp" required placeholder="app">
+                </div>
+                <div class="form-group">
+                    <label for="email">Email del titular</label>
+                    <input type="email" id="email" name="email" required placeholder="Juan Pérez">
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Descripción del Proyecto</label>
+                    <textarea id="description" name="description" required placeholder="Describe tu proyecto y cómo planeas integrar los servicios bancarios..."></textarea>
+                </div>
+
+                <button type="submit" class="btn" id="generateBtn">
+                    <span id="btnText">Generar Token de Acceso</span>
+                    <span id="btnLoading" class="hidden">
+                            <span class="loading-spinner"></span>
+                            Generando...
+                        </span>
+                </button>
+            </form>
+        </div>
+
+        <div class="credentials-section" th:classappend="${token} != null ? '' : ' hidden'" id="credentials-panel">
+            <h2>
+                <span class="success-icon">✓</span>
+                Token Generado Exitosamente
+            </h2>
+
+            <div class="token-container">
+                <div class="token-label">API Access Token</div>
+                <div class="token-value" id="tokenValue" th:text="${token}">token_aquí</div>
+                <button class="copy-btn" id="copyBtn" onclick="copyToClipboard()">Copiar</button>
+            </div>
+        </div>
+
+        <script>
+            // Mostrar el panel si hay token (por si el navegador no interpreta bien th:classappend)
+            window.addEventListener("DOMContentLoaded", function() {
+                const token = document.getElementById("tokenValue").textContent;
+                if (token && token.trim() !== "") {
+                    document.getElementById("registration-form").classList.add("hidden");
+                    document.getElementById("credentials-panel").classList.remove("hidden");
+                }
+            });
+        </script>
+
+    </div>
+</div>
+
+<script>
+    // Función para generar token bancario realista
+    function generateBankToken() {
+        // Prefijos típicos de tokens bancarios
+        const prefixes = ['bank_live_', 'bk_', 'api_', 'token_'];
+        const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+
+        // Caracteres para el token
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let token = prefix;
+
+        // Generar 64 caracteres para el token
+        for (let i = 0; i < 64; i++) {
+            token += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+
+        return token;
+    }
+
+    // Función para copiar al portapapeles
+    function copyToClipboard() {
+        const tokenElement = document.getElementById('tokenValue');
+        const copyBtn = document.getElementById('copyBtn');
+        const text = tokenElement.textContent;
+
+        navigator.clipboard.writeText(text).then(function() {
+            // Cambiar apariencia del botón
+            copyBtn.textContent = '✓ Copiado';
+            copyBtn.classList.add('copied');
+
+            // Restaurar después de 2 segundos
+            setTimeout(function() {
+                copyBtn.textContent = 'Copiar';
+                copyBtn.classList.remove('copied');
+            }, 2000);
+        }).catch(function(err) {
+            console.error('Error al copiar: ', err);
+            // Fallback para navegadores que no soportan clipboard API
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+
+            copyBtn.textContent = '✓ Copiado';
+            copyBtn.classList.add('copied');
+            setTimeout(function() {
+                copyBtn.textContent = 'Copiar';
+                copyBtn.classList.remove('copied');
+            }, 2000);
+        });
+    }
+
+    // Función para resetear el formulario
+    function resetForm() {
+        document.getElementById('appForm').reset();
+        document.getElementById('registration-form').classList.remove('hidden');
+        document.getElementById('credentials-panel').classList.add('hidden');
+    }
+
+    // Manejo del formulario
+    document.getElementById('appForm').addEventListener('submit', function(e) {
+        // e.preventDefault();
+
+        // // Mostrar estado de carga
+        // const btnText = document.getElementById('btnText');
+        // const btnLoading = document.getElementById('btnLoading');
+        // const generateBtn = document.getElementById('generateBtn');
+        //
+        // btnText.classList.add('hidden');
+        // btnLoading.classList.remove('hidden');
+        // generateBtn.disabled = true;
+        //
+        // // Simular tiempo de procesamiento del banco (2 segundos)
+        // setTimeout(function() {
+        //     // Obtener datos del formulario
+        //     const formData = new FormData(document.getElementById('appForm'));
+        //     const developerName = formData.get('developerName');
+        //     const appType = formData.get('appType');
+        //     const description = formData.get('description');
+        //
+        //     // Generar token
+        //     const token = generateBankToken();
+        //
+        //     // Mostrar el token en la interfaz
+        //     document.getElementById('tokenValue').textContent = token;
+        //
+        //     // Cambiar la vista para mostrar las credenciales
+        //     document.getElementById('registration-form').classList.add('hidden');
+        //     document.getElementById('credentials-panel').classList.remove('hidden');
+        //
+        //     // Restaurar estado del botón
+        //     btnText.classList.remove('hidden');
+        //     btnLoading.classList.add('hidden');
+        //     generateBtn.disabled = false;
+        //
+        //     // Log para desarrollo (simula guardado en base de datos)
+        //     console.log('Token bancario generado:', {
+        //         developerName: developerName,
+        //         appType: appType,
+        //         description: description,
+        //         token: token,
+        //         generatedAt: new Date().toISOString(),
+        //         environment: 'sandbox'
+        //     });
+
+        // }, 2000);
+    });
+
+    // Efectos suaves en los inputs
+    document.querySelectorAll('input, select, textarea').forEach(function(element) {
+        element.addEventListener('focus', function() {
+            this.parentElement.style.transform = 'translateY(-1px)';
+            this.parentElement.style.transition = 'transform 0.2s ease';
+        });
+
+        element.addEventListener('blur', function() {
+            this.parentElement.style.transform = 'translateY(0)';
+        });
+    });
+</script>
+</body>
+</html>

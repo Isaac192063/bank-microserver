@@ -35,12 +35,13 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/card/list").permitAll()
                         .requestMatchers(HttpMethod.GET, "/card").permitAll()
                         .requestMatchers(HttpMethod.POST, "/card/save-card").permitAll()
-                        .requestMatchers("/style/**").permitAll()
-                        .requestMatchers("/favicon.ico").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/style/**").permitAll()
+                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/favicon.ico").permitAll()
 
                         // Endpoints protegidos
-                        .requestMatchers(HttpMethod.GET, "/transaction/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/v1/payment").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/transaction/**").authenticated()
 
                         // Todo lo demás se bloquea
                         .anyRequest().denyAll()
